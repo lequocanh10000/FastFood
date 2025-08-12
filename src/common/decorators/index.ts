@@ -1,6 +1,6 @@
 import { applyDecorators } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsBoolean, Min, Max } from "class-validator";
 
 export const StringRequired = (name: string) => applyDecorators(
     ApiProperty({
@@ -20,13 +20,21 @@ export const StringNotRequired = applyDecorators(
 );
 
 export const NumberNotRequired = applyDecorators(
-    ApiProperty({ required: false}),
+    ApiProperty({ required: true}),
     IsNumber(),
     IsOptional()
-)
+);
+
+export const NumberRequired = ({min = 0, max, name} : {min?: number; max?: number, name: string}) => applyDecorators(
+    ApiProperty({ required: false}),
+    IsNumber(),
+    IsNotEmpty({message: `${name} không được bỏ trống`}),
+    Min(min),
+    ... (max ? [Max(max)] : [])
+);
 
 export const BooleanNotRequired = applyDecorators(
     ApiProperty({ required: false}),
     IsNumber(),
     IsBoolean()
-)
+);
