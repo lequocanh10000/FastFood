@@ -8,6 +8,7 @@ import { StartTimingMiddleware } from './common/middlewares/start-timing.middlew
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { SeedModule } from './modules/seed/seed.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module( {
   imports: [
@@ -31,6 +32,7 @@ import { SeedModule } from './modules/seed/seed.module';
         global: true,
     }),
     SeedModule,
+    ProductModule,
   ],
 })
 export class AppModule implements NestModule{
