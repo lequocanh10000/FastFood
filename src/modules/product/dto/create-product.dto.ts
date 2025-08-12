@@ -12,7 +12,7 @@ export class ProductVariantDto {
     type: ProductVariantType;
 
     @NumberRequired('Giá tùy chỉnh biến thể', 1)
-    modifiedPrice: number;
+    modifiledPrice: number;
 
 }
 
