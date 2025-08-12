@@ -3,6 +3,8 @@ import { Category } from './category.model';
 import { OrderItem } from './order-item.model';
 import { CartItem } from './cart-item.model';
 import { Review } from './review.model';
+import { ProductVariant } from './product-variant';
+import { ProductIngredient } from './product-ingredient.model';
 
 @Table
 export class Product extends Model<Product> {
@@ -49,6 +51,11 @@ export class Product extends Model<Product> {
     })
     isFeatured: boolean;
 
+    @Column({
+        type: DataType.VIRTUAL(DataType.INTEGER)
+    })
+    variantPrice: number;
+
     @ForeignKey(() => Category)
     @Column({
         allowNull: false,
@@ -68,4 +75,10 @@ export class Product extends Model<Product> {
 
     @HasMany(() => Review)
     reviews: Review[];
+
+    @HasMany(() => ProductVariant)
+    productVariants: ProductVariant[];
+
+    @HasMany(() => ProductIngredient)
+    productIngredients: ProductIngredient[];
 }
