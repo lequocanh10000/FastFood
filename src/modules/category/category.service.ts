@@ -38,10 +38,6 @@ export class CategoryService {
         })
     } 
 
-    async findOne(id: number) {
-        return await this.categoryModel.findByPk(id);
-    }
-
     async update(updateCategoryDto: UpdateCategoryDto, id: number) {
         const alreadyExists = await this.categoryModel.findByPk(id);
         if(!alreadyExists) {
@@ -66,5 +62,9 @@ export class CategoryService {
         return {
             message: 'Danh mục đã được xóa'
         }
+    }
+
+    async findOne(id: number) {
+        return await this.categoryModel.findByPk(id, {raw: true});
     }
 }
