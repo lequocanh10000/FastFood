@@ -3,7 +3,7 @@ export { Category} from './category.model';
 export { Product} from './product.model';
 export { Ingredient} from './ingredient.model';
 export { ProductIngredient} from './product-ingredient.model';
-export { ProductVariant} from './product-variant';
+export { ProductVariant, ProductVariantSize, ProductVariantType} from './product-variant';
 export { Address} from './address.model';
 export { Order, OrderStatus, PaymentMethod, PaymentStatus} from './order.model';
 export { OrderItem} from './order-item.model';
