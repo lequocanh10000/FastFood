@@ -5,6 +5,9 @@ import { CategoryService } from '../category/category.service';
 import Helper from 'src/utils/helper';
 import { InjectModel } from '@nestjs/sequelize';
 import { Category, Ingredient, Product, ProductIngredient, ProductVariant } from 'src/models';
+import { FilterProductDto } from './dto/filter-product.dto';
+import { Op } from 'sequelize';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProductService {
@@ -14,11 +17,12 @@ export class ProductService {
         @InjectModel(Product) private readonly productModel: typeof Product,
         @InjectModel(Ingredient) private readonly ingredientModel: typeof Ingredient,
         @InjectModel(ProductIngredient) private readonly productIngredientModel: typeof ProductIngredient,
-        @InjectModel(ProductVariant) private readonly productVariantModel: typeof ProductVariant
+        @InjectModel(ProductVariant) private readonly productVariantModel: typeof ProductVariant,
+        private readonly configService: ConfigService,
     ) {}
 
     async findOne(id: number) {
-        return this.productModel.findByPk(id, {
+        return this.productModel.findOne({
             include: [
                 {
                     model: ProductVariant,
@@ -46,6 +50,10 @@ export class ProductService {
             ],
             attributes: {
                 exclude: ['createdAt', 'updatedAt', 'categoryId'],
+            },
+            where: {
+               id,
+               isActive: true, 
             }
         });
     }
@@ -120,5 +128,82 @@ export class ProductService {
             await t.rollback();
             throw new BadRequestException(message);
         }
+    }
+
+    // Todo: Them so sao trung binh
+    async findAll(filterProductDto: FilterProductDto) {
+        const {
+            search,
+            isActive,
+            isFeatured,
+            categoryId,
+            sortBy,
+            sortOrder,
+            maxPrice,
+            minPrice,
+            page,
+            limit
+        } = filterProductDto
+
+        const whereClause: any = {}
+        if(search !== undefined) {
+            whereClause[Op.or] = [
+                {name: {[Op.iLike]: `%${search}%`}},   
+                {description: {[Op.iLike]: `%${search}%`}}, 
+            ];
+        }
+
+        if(isActive !== undefined) whereClause.isActive = isActive;
+        if(isFeatured !== undefined) whereClause.isFeatured = isFeatured;
+        if(categoryId !== undefined) whereClause.categoryId = categoryId;
+
+        const limitPage = Number(limit || this.configService.get<number>("LIMIT_PRODUCTS"));
+        const currentPage = Number(page || 1);
+        const offset = (currentPage - 1) * limitPage;
+
+        if(minPrice !== undefined || maxPrice !== undefined) {
+            whereClause.basePrice = {}
+            if(minPrice !== undefined) whereClause.basePrice[Op.gte] = minPrice;
+            if(maxPrice !== undefined) whereClause.basePrice[Op.lte] = maxPrice; 
+        }
+
+        let orderClause: any[] = [];
+        if(sortBy && sortOrder) {
+            orderClause = [[sortBy, sortOrder]];
+        } else {
+            orderClause = [['createdAt', 'DESC']];
+        }
+
+        const {rows, count} = await this.productModel.findAndCountAll({
+            where: whereClause,
+            order: orderClause,
+            limit: limitPage,
+            offset
+        });
+
+        const totalItems = Array.isArray(count) ? count.length : count;
+
+        return {
+            items: rows,
+            paginationMeta: {
+                totalItems,
+                currentPage,
+                limit: limitPage,
+                totalPages: Math.ceil(totalItems / limitPage),
+            }
+        }
+    }
+
+    async removeSoft(id: number) {
+        await this.productModel.update(
+            { isActive: false},
+            {where: {id}},
+        );
+        return { message: 'Đã xóa sản phẩm'};
+    } 
+
+    async removeHard(id: number) {
+        await this.productModel.destroy({where: {id}, cascade: true});
+        return { message: 'Đã xóa sản phẩm'}
     }
 }
