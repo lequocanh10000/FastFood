@@ -29,7 +29,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T
                 return data as ApiResponse<T>;
             }
 
-             let finalMessage = this.getDefaultMessage(request.method);
+            let finalMessage = this.getDefaultMessage(request.method);
 
             if(data && typeof data === 'object' && 'message' in data) {
                 finalMessage = data.message as string;
