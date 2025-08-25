@@ -1,7 +1,6 @@
 import { Model, Table, Column, DataType, HasMany, BeforeValidate, BeforeUpdate } from "sequelize-typescript";
 import { Product } from "./product.model";
 import Helper from "src/utils/helper";
-import { console } from "inspector";
 
 @Table 
 export class Category extends Model<Category> {
